@@ -6,9 +6,10 @@
 
 ### How to install the plugin?
 1. Open QGis
-2. Click on Plugins/Manage and Install Plugins...
-3. In the popup "plugins" window, click on Install from ZIP and select the zip file with the plugin QCircularStats, finally click on "Install Plugin".
-4. Enjoy!
+2. Install scikit-learn dependencie
+3. Click on Plugins/Manage and Install Plugins...
+4. In the popup "plugins" window, click on Install from ZIP and select the zip file with the plugin QCircularStats, finally click on "Install Plugin".
+5. Enjoy!
 
 
 ### Example of use

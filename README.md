@@ -1,7 +1,7 @@
 ## QCircularStats: A QGIS-plugin for evaluation bidimensional data by circular statistics
 
 <p align="center">
-<img src="https://github.com/mhaut/pycircularstats/blob/master/images/pycircstats.png" width="400">
+<img src="https://github.com/mhaut/QCircularStats/blob/master/images/imageqgis.png?raw=true" width="800">
 </p>
 
 ### How to install the plugin?

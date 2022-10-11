@@ -1,67 +1,236 @@
-<ui version="4.0" >
- <class>QCircularStatsDialogBase</class>
- <widget class="QDialog" name="QCircularStatsDialogBase" >
-  <property name="geometry" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>974</width>
+    <height>770</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>QCircularStats</string>
   </property>
-  <widget class="QDialogButtonBox" name="button_box" >
-   <property name="geometry" >
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation" >
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons" >
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="title">
+        <string>                     QCircularStats</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="imageicono">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawmoduleandazimuthdistribution">
+          <property name="text">
+           <string>ModuleandAzimuthDistribution</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawdistribution">
+          <property name="text">
+           <string>Distribution</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawhistogram">
+          <property name="text">
+           <string>Histogram</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawPoints">
+          <property name="text">
+           <string>Points</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawdensityMap">
+          <property name="text">
+           <string>DensityMap</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawqqplot">
+          <property name="text">
+           <string>QQplot</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="drawVectors">
+          <property name="text">
+           <string>Vectors</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="modstats">
+          <property name="text">
+           <string>Module stats</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="azimuthstats">
+          <property name="text">
+           <string>Azimuths stats</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="4">
+      <widget class="QGraphicsView" name="graphicsView"/>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QSplitter" name="splitter_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <widget class="QRadioButton" name="type0">
+         <property name="text">
+          <string>Cartesian</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="type1">
+         <property name="text">
+          <string>Incremental</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="type2">
+         <property name="text">
+          <string>Polar</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="calculate">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Calculate</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="buttonload">
+       <property name="text">
+        <string>Select file</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4" rowspan="2">
+      <widget class="QSplitter" name="splitter_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QRadioButton" name="Files">
+        <property name="text">
+         <string>Files</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="Map">
+        <property name="text">
+         <string>Map</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelpath">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QSplitter" name="splitter_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QLabel" name="labelModules">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Modules</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="comboBoxModules"/>
+       <widget class="QLabel" name="labelAzimuths">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Azimuths</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="comboBoxAzimuths"/>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="savedata">
+       <property name="text">
+        <string>Save Data</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="buttonmap">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Load Map</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>button_box</sender>
-   <signal>accepted()</signal>
-   <receiver>QCircularStatsDialogBase</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="source_label" >
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destination_label" >
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>button_box</sender>
-   <signal>rejected()</signal>
-   <receiver>QCircularStatsDialogBase</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="source_label" >
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destination_label" >
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -30,6 +30,8 @@ from .resources import *
 # Import the code for the dialog
 from .qcircularstats_dialog import QCircularStatsDialog
 import os.path
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtCore import Qt
 
 
 class QCircularStats:
@@ -160,7 +162,7 @@ class QCircularStats:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/qcircularstats/icon.png'
+        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
         self.add_action(
             icon_path,
             text=self.tr(u'QCircularStats'),
@@ -189,8 +191,17 @@ class QCircularStats:
             self.first_start = False
             self.dlg = QCircularStatsDialog()
 
+        self.dlg.comboBoxModules.clear()
+        self.dlg.comboBoxAzimuths.clear()
+        self.dlg.change_load_options()
+        self.dlg.sceneGrahics.clear()
+        self.dlg.graphicsView.items().clear()
         # show the dialog
         self.dlg.show()
+        w = self.dlg.imageicono.geometry().width()
+        h = self.dlg.imageicono.geometry().height()
+        logo_path = os.path.join(os.path.dirname(__file__), 'images/logo.png')
+        self.dlg.imageicono.setPixmap(QPixmap(logo_path).scaled(w,h, Qt.KeepAspectRatio))
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed

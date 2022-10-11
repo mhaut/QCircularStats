@@ -26,6 +26,16 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt import QtCore, QtGui
+from qgis.PyQt.QtGui import QFont, QImage, QPainter, QPixmap
+from qgis.core import QgsProject
+
+import pycircularstats.fileIO as pyCfileIO
+import pycircularstats.convert as pyCconvert
+import pycircularstats.math as pyCmath
+import pycircularstats.draw as pyCdraw
+from matplotlib.backends.backend_qt5agg import FigureCanvas
+import numpy as np
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -42,3 +52,238 @@ class QCircularStatsDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        self.sceneGrahics = QtWidgets.QGraphicsScene()
+        self.graphicsView.setScene(self.sceneGrahics)
+        #pyCdraw.DPIEXPORT = 100
+
+        #self.imageicono.setPixmap(QtGui.QPixmap('./images/logo.png').scaled(202,191, QtCore.Qt.KeepAspectRatio))
+        self.buttonload.clicked.connect(self.load_data_file)
+        self.buttonmap.clicked.connect(self.load_data_maps)
+        self.calculate.clicked.connect(self.exec_func)
+        self.savedata.clicked.connect(self.save_data2pc)
+        self.Files.toggled.connect(self.change_load_options)
+
+
+    def show_message(self, typeSMS, info):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText(typeSMS)
+        msg.setInformativeText(info)
+        msg.setWindowTitle(typeSMS + " pyCircStats2D")
+        msg.exec_()
+
+
+    def save_data2pc(self):
+        if self.show_image * self.show_text: return
+        if self.show_image:
+            fileName = QtWidgets.QFileDialog.getSaveFileName(self,self.tr("Export to PNG"), "image", self.tr("PNG image (*.png)"))
+            if fileName[0] != "":
+                size = self.canvas.size()
+                width, height = size.width(), size.height()
+                rect = QtGui.QPixmap(QtGui.QImage(self.canvas.buffer_rgba(), width, height, QtGui.QImage.Format_ARGB32).rgbSwapped())
+                pixmap = QtGui.QPixmap(int(rect.width()), int(rect.height()))
+                pixmap.save(str(fileName[0]) + '.png')
+            else:
+                pass
+        else: # text
+            fileName = QtWidgets.QFileDialog.getSaveFileName(self,self.tr("Export to TXT"), "info", self.tr("TXT file (*.txt)"))
+            if fileName[0] != "":
+                text_file = open(str(fileName[0]) + '.txt', 'w')
+                text_file.write(self.sceneGrahics.items()[0].toPlainText())
+                text_file.close()
+            else:
+                pass
+
+
+    def change_load_options(self):
+        if self.Files.isChecked():
+            self.type0.setEnabled(True)
+            self.type1.setEnabled(True)
+            self.type2.setEnabled(True)
+            self.labelModules.setEnabled(False)
+            self.comboBoxModules.clear()
+            self.comboBoxModules.setEnabled(False)
+            self.labelAzimuths.setEnabled(False)
+            self.comboBoxAzimuths.clear()
+            self.comboBoxAzimuths.setEnabled(False)
+            self.buttonload.setEnabled(True)
+            self.buttonmap.setEnabled(False)
+        else:
+            self.type0.setEnabled(False)
+            self.type1.setEnabled(False)
+            self.type2.setEnabled(False)
+            self.labelModules.setEnabled(True)
+            layers = QgsProject.instance().mapLayers()
+            layersName = [layers[key].name() for key in layers.keys()]
+            self.comboBoxModules.setEnabled(True)
+            self.comboBoxModules.addItems(layersName)
+            self.labelAzimuths.setEnabled(True)
+            self.comboBoxAzimuths.setEnabled(True)
+            self.comboBoxAzimuths.addItems(layersName)
+            self.buttonload.setEnabled(False)
+            self.buttonmap.setEnabled(True)
+        self.calculate.setEnabled(False)
+        self.savedata.setEnabled(False)
+        self.labelpath.setText("")
+        
+
+    def load_data_maps(self):
+        self.calculate.setEnabled(False)
+        nameLmodules  = self.comboBoxModules.currentText()
+        nameLazimuths = self.comboBoxAzimuths.currentText()
+        if len(self.comboBoxModules) == 0 or len(self.comboBoxAzimuths) == 0:
+            self.show_message("ERROR", "load module and/or azimuth layers")
+        elif len(nameLmodules) == 0 or len(nameLazimuths) == 0:
+            self.show_message("ERROR", "select module and/or azimuth layers")
+        else:
+            modVals = []; azVals = []
+            for idlayer, layername in enumerate([nameLmodules, nameLazimuths]):
+                layer = QgsProject.instance().mapLayersByName(layername)[0]
+                print(layer)
+                provider = layer.dataProvider()
+                extent = provider.extent()
+                height, width = layer.height(), layer.width()
+                block = provider.block(1, extent, width, height)
+                for y in range(0, height):
+                    for x in range(0, width):
+                        if block.value(y, x) >= 0:
+                            if idlayer == 0:
+                                modVals.append(block.value(y, x))
+                            else:
+                                azVals.append(block.value(y, x))
+            self.modules  = np.array(modVals)
+            self.azimuths = np.array(azVals)
+            self.X_coordinate, self.Y_coordinate = pyCconvert.vectors2rectangularMAP(modVals, azVals).T
+            self.calculate.setEnabled(True)
+
+
+    def resizeEvent(self, event):
+        bounds = self.sceneGrahics.itemsBoundingRect()
+        self.graphicsView.fitInView(bounds, QtCore.Qt.KeepAspectRatioByExpanding)
+        self.graphicsView.centerOn(0,0)
+
+
+    def load_data_file(self):
+        fpath = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', os.path.join(
+    os.path.dirname(__file__), 'datasets'),"Image files (*.txt)")[0]
+        print(fpath)
+        self.calculate.setEnabled(False)
+        if fpath:
+            if   self.type0.isChecked(): typeF = 'cartesian'
+            elif self.type1.isChecked(): typeF = 'incremental'
+            elif self.type2.isChecked(): typeF = 'polar'
+            else:
+                typeF = 'error'
+                self.show_message("ERROR", "select type")
+            if typeF != 'error':
+                self.data = pyCfileIO.readfromfile(fpath)
+                if pyCfileIO.correct_type(typeF, self.data):
+                    self.data = pyCfileIO.data2res(typeF, self.data)
+                    self.modules  = self.data[:,0]
+                    self.azimuths = self.data[:,1]
+                    self.X_coordinate = self.data[:,2]
+                    self.Y_coordinate = self.data[:,3]
+                    self.vectors = self.data[:,4:8]
+                    fname = fpath.split("/")[-1]
+                    self.labelpath.setText(fname)
+                    self.calculate.setEnabled(True)
+                    enableVector = np.sum(np.abs(self.vectors)) != 0
+                    self.drawVectors.setEnabled(enableVector)
+                    self.drawmoduleandazimuthdistribution.setChecked(True)
+                else:
+                    self.show_message("ERROR", "invalid text format")
+
+
+    def drawObject(self, objectReturn):
+        if objectReturn != []:
+            self.sceneGrahics.clear()
+            try:
+                self.canvas = FigureCanvas(objectReturn)
+                self.canvas.setGeometry(0, 0, self.graphicsView.width(), self.graphicsView.height())
+                self.sceneGrahics.addWidget(self.canvas)
+                self.show_image = True
+                self.show_text  = False
+            except: # its text
+                self.sceneGrahics.addText(str(objectReturn), QFont('Arial Black', 15, QFont.Light))
+                self.show_image = False
+                self.show_text  = True
+
+            self.resizeEvent(None)
+        else:
+            self.showMessageInView("ERROR: No information wind in region")
+
+
+    def exec_func(self):
+        self.savedata.setEnabled(True)
+        if self.drawmoduleandazimuthdistribution.isChecked():
+            self.drawazimuthdistrib()
+        elif self.drawdistribution.isChecked():
+            self.drawdistrib()
+        elif self.drawhistogram.isChecked():
+            self.drawhisto()
+        elif self.drawPoints.isChecked():
+            self.drawpoi()
+        elif self.drawdensityMap.isChecked():
+            self.drawdenmap()
+        elif self.drawqqplot.isChecked():
+            self.drawqq()
+        elif self.drawVectors.isChecked():
+            self.drawvec()
+        elif self.modstats.isChecked():
+            self.modulestats()
+        elif self.azimuthstats.isChecked():
+            self.azistats()
+        else:
+            self.savedata.setEnabled(False)
+
+
+    def drawazimuthdistrib(self):
+        figure = pyCdraw.drawmoduleandazimuthdistribution(self.X_coordinate, self.Y_coordinate)
+        self.drawObject(figure)
+
+
+    def drawdistrib(self):
+        figure = pyCdraw.drawdistribution(self.azimuths)
+        self.drawObject(figure)
+
+
+    def drawhisto(self):
+        figure = pyCdraw.drawhistogram(self.azimuths, classSize=15)
+        self.drawObject(figure)
+
+
+    def drawpoi(self):
+        figure = pyCdraw.drawPoints(self.X_coordinate, self.Y_coordinate, outlier_percent = 0.08)
+        self.drawObject(figure)
+
+
+    def drawdenmap(self):
+        figure = pyCdraw.drawdensityMap(self.X_coordinate, self.Y_coordinate, bandwidth=10, paintpoint = True)
+        self.drawObject(figure)
+
+
+    def drawqq(self):
+        figure = pyCdraw.drawqqplot(self.azimuths)
+        self.drawObject(figure)
+        del figure
+
+
+    def drawvec(self):
+        if np.sum(np.abs(self.vectors)) == 0:
+            self.show_image("ERROR", "The data has not been loaded in Cartesian format")
+        else:
+            figure = pyCdraw.drawVectors(self.data)
+            self.drawObject(figure)
+
+
+    def modulestats(self):
+        figure = pyCmath.allmodulestatistics(self.modules)
+        self.drawObject(figure)
+
+
+    def azistats(self):
+        figure  = pyCmath.allazimuthstatistic(self.azimuths)
+        figure += pyCmath.raotest(self.azimuths)
+        figure += pyCmath.rayleightest(self.azimuths)
+        self.drawObject(figure)
